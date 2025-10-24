@@ -113,13 +113,25 @@ FedEx Clone Team
         '''
 
         try:
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@fedexclone.com',
-                [user.email],
-                fail_silently=False,
+            from sendgrid import SendGridAPIClient
+            from sendgrid.helpers.mail import Mail, ClickTracking, TrackingSettings
+
+            # Create email message with click tracking disabled
+            sg_mail = Mail(
+                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@fedexclone.com',
+                to_emails=user.email,
+                subject=subject,
+                plain_text_content=message
             )
+
+            # Disable click tracking to prevent URL mangling
+            tracking_settings = TrackingSettings()
+            tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
+            sg_mail.tracking_settings = tracking_settings
+
+            # Send email via SendGrid API
+            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
+            response = sg.send(sg_mail)
             messages.success(
                 self.request,
                 f'Account created successfully! Please check your email ({user.email}) to verify your account before logging in.'
