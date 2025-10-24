@@ -5,6 +5,7 @@
 # But keep the repository root README.md (do not ignore it)
 !README.
 !requirements.txt
+!runtime.txt
 
 # Typical additions you might want as well
 # Byte-compiled / cache
