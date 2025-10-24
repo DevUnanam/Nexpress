@@ -162,6 +162,10 @@ DEFAULT_FROM_EMAIL = "riaahh20@gmail.com"
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
 
+
+SITE_URL = "https://nexpress.onrender.com"
+
+
 if DEBUG:
     DOMAIN = "http://127.0.0.1:8000"
 else:
