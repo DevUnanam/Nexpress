@@ -2,8 +2,8 @@
 *.txt
 *.md
 
-# But keep the repository root README.md (do not ignore it)
-!README.
+# But keep important text files
+!README.md
 !requirements.txt
 !runtime.txt
 
@@ -12,10 +12,13 @@
 __pycache__/
 .pytest_cache/
 .env
+
 # Django / Python artifacts
 *.py[cod]
 *.sqlite3
 env/
 venv/
-/.venv/
+.venv/
+
+# Node modules
 node_modules/
