@@ -75,6 +75,17 @@ class RegisterView(CreateView):
         # Save user but don't log them in yet
         user = form.save(commit=False)
         user.is_active = True  # Keep account active but require email verification
+
+        if user.role == 'admin':
+            user.is_staff = True
+            user.is_superuser = True
+        elif user.role == 'staff':
+            user.is_staff = True
+            user.is_superuser = False
+        else:
+            user.is_staff = False
+            user.is_superuser = False
+
         user.save()
 
         # Generate verification token
