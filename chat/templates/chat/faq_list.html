@@ -1,0 +1,144 @@
+{% extends 'base.html' %}
+
+{% block title %}Frequently Asked Questions - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">Frequently Asked Questions</h1>
+            <p class="text-lg text-gray-600">Find answers to common questions about our services</p>
+        </div>
+
+        <!-- Search and Filter -->
+        <div class="bg-white rounded-lg shadow p-6 mb-6">
+            <form method="get" class="space-y-4">
+                <!-- Search Bar -->
+                <div class="relative">
+                    <input
+                        type="text"
+                        name="search"
+                        value="{{ search_query }}"
+                        placeholder="Search FAQs..."
+                        class="w-full border border-gray-300 rounded-lg px-4 py-3 pl-12 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                    <svg class="w-6 h-6 absolute left-4 top-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+
+                <!-- Category Filter -->
+                <div class="flex flex-wrap gap-2">
+                    <a href="{% url 'chat:faq_list' %}" class="px-4 py-2 rounded-lg {% if not current_category %}bg-gradient-to-br from-green-500 to-emerald-700 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+                        All
+                    </a>
+                    {% for code, name in categories %}
+                    <a href="?category={{ code }}" class="px-4 py-2 rounded-lg {% if current_category == code %}bg-gradient-to-br from-green-500 to-emerald-700 text-white{% else %}bg-gray-200 text-gray-700 hover:bg-gray-300{% endif %} transition">
+                        {{ name }}
+                    </a>
+                    {% endfor %}
+                </div>
+
+                <button type="submit" class="w-full md:w-auto bg-gradient-to-br from-green-500 to-emerald-700 hover:bg-gradient-to-br from-green-600 to-emerald-800 text-white font-semibold px-6 py-2 rounded-lg transition duration-200">
+                    Search
+                </button>
+            </form>
+        </div>
+
+        <!-- FAQs List -->
+        {% if faqs %}
+        <div class="space-y-4">
+            {% for faq in faqs %}
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="p-6">
+                    <div class="flex items-start justify-between mb-3">
+                        <h3 class="text-lg font-semibold text-gray-900 flex-1">
+                            {{ faq.question }}
+                        </h3>
+                        <span class="ml-4 px-3 py-1 text-xs font-semibold rounded-full
+                            {% if faq.category == 'shipping' %}bg-green-100 text-green-800
+                            {% elif faq.category == 'tracking' %}bg-green-100 text-green-800
+                            {% elif faq.category == 'delivery' %}bg-purple-100 text-purple-800
+                            {% elif faq.category == 'refund' %}bg-red-100 text-red-800
+                            {% elif faq.category == 'pickup' %}bg-yellow-100 text-yellow-800
+                            {% elif faq.category == 'pricing' %}bg-indigo-100 text-indigo-800
+                            {% elif faq.category == 'account' %}bg-pink-100 text-pink-800
+                            {% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ faq.get_category_display }}
+                        </span>
+                    </div>
+                    <div class="text-gray-700 leading-relaxed">
+                        {{ faq.answer|linebreaks }}
+                    </div>
+                    {% if faq.keywords %}
+                    <div class="mt-4 pt-4 border-t border-gray-100">
+                        <p class="text-xs text-gray-500">
+                            <span class="font-semibold">Keywords:</span> {{ faq.keywords }}
+                        </p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <div class="mt-8 flex justify-center">
+            <nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                {% if page_obj.has_previous %}
+                <a href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    First
+                </a>
+                <a href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Previous
+                </a>
+                {% endif %}
+
+                <span class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700">
+                    Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                </span>
+
+                {% if page_obj.has_next %}
+                <a href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+                    Next
+                </a>
+                <a href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if current_category %}&category={{ current_category }}{% endif %}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+                    Last
+                </a>
+                {% endif %}
+            </nav>
+        </div>
+        {% endif %}
+
+        {% else %}
+        <div class="bg-white rounded-lg shadow p-12 text-center">
+            <svg class="w-20 h-20 mx-auto mb-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No FAQs Found</h3>
+            <p class="text-gray-600 mb-6">
+                {% if search_query %}
+                    No results found for "{{ search_query }}". Try a different search term.
+                {% else %}
+                    No FAQs available at the moment.
+                {% endif %}
+            </p>
+            <a href="{% url 'chat:faq_list' %}" class="inline-block bg-gradient-to-br from-green-500 to-emerald-700 hover:bg-gradient-to-br from-green-600 to-emerald-800 text-white font-semibold px-6 py-3 rounded-lg transition duration-200">
+                View All FAQs
+            </a>
+        </div>
+        {% endif %}
+
+        <!-- Need More Help -->
+        <div class="mt-8 bg-gradient-to-r from-green-500 to-emerald-700 rounded-lg shadow-lg p-8 text-center text-white">
+            <h2 class="text-2xl font-bold mb-3">Still need help?</h2>
+            <p class="mb-6">Chat with our support team for personalized assistance</p>
+            <a href="{% url 'chat:chat_interface' %}" class="inline-block bg-white text-green-600 hover:bg-gray-100 font-semibold px-8 py-3 rounded-lg transition duration-200">
+                Start Chat
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock %}

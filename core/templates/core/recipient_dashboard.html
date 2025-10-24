@@ -1,0 +1,167 @@
+{% extends 'base.html' %}
+
+{% block title %}My Shipments - Nexpress{% endblock %}
+
+{% block content %}
+<div class="py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <h1 class="text-3xl font-bold text-gray-900 mb-6">My Expected Shipments</h1>
+
+        <!-- Statistics Cards -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-blue-100 text-blue-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-semibold text-gray-900">{{ total_expected }}</p>
+                        <p class="text-sm text-gray-600">Total Expected</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-yellow-100 text-yellow-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-semibold text-gray-900">{{ in_transit_count }}</p>
+                        <p class="text-sm text-gray-600">In Transit</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <div class="flex items-center">
+                    <div class="p-3 rounded-full bg-green-100 text-green-600">
+                        <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <p class="text-2xl font-semibold text-gray-900">{{ delivered_count }}</p>
+                        <p class="text-sm text-gray-600">Delivered</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- In Transit Shipments -->
+        {% if in_transit_shipments %}
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">In Transit</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for shipment in in_transit_shipments %}
+                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">{{ shipment.tracking_number }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">From: {{ shipment.shipper.username }}</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm font-semibold {{ shipment.get_status_badge_class }} rounded-full">
+                                {{ shipment.get_status_display }}
+                            </span>
+                        </div>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p class="text-gray-500">Delivery Address:</p>
+                                <p class="text-gray-900">{{ shipment.delivery_address|truncatewords:10 }}</p>
+                            </div>
+                            <div>
+                                <p class="text-gray-500">Last Updated:</p>
+                                <p class="text-gray-900">{{ shipment.updated_at|timesince }} ago</p>
+                            </div>
+                        </div>
+                        <div class="mt-4">
+                            <a href="{% url 'core:track_shipment' shipment.tracking_number %}" class="text-blue-600 hover:text-blue-800 font-medium">
+                                Track Shipment →
+                            </a>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Pending Shipments -->
+        {% if pending_shipments %}
+        <div class="bg-white rounded-lg shadow mb-6">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Pending Shipments</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for shipment in pending_shipments %}
+                    <div class="border border-gray-200 rounded-lg p-4">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">{{ shipment.tracking_number }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">From: {{ shipment.shipper.username }}</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm font-semibold {{ shipment.get_status_badge_class }} rounded-full">
+                                {{ shipment.get_status_display }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600">Created {{ shipment.created_at|timesince }} ago</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Delivered Shipments -->
+        {% if delivered_shipments %}
+        <div class="bg-white rounded-lg shadow">
+            <div class="px-6 py-4 border-b border-gray-200">
+                <h2 class="text-xl font-semibold text-gray-900">Delivered</h2>
+            </div>
+            <div class="p-6">
+                <div class="space-y-4">
+                    {% for shipment in delivered_shipments %}
+                    <div class="border border-gray-200 rounded-lg p-4 opacity-75">
+                        <div class="flex justify-between items-start mb-3">
+                            <div>
+                                <h3 class="font-semibold text-lg text-gray-900">{{ shipment.tracking_number }}</h3>
+                                <p class="text-sm text-gray-600 mt-1">From: {{ shipment.shipper.username }}</p>
+                            </div>
+                            <span class="px-3 py-1 text-sm font-semibold {{ shipment.get_status_badge_class }} rounded-full">
+                                Delivered ✓
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-600">Delivered {{ shipment.updated_at|timesince }} ago</p>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Empty State -->
+        {% if not in_transit_shipments and not pending_shipments and not delivered_shipments %}
+        <div class="bg-white rounded-lg shadow p-12 text-center">
+            <svg class="w-24 h-24 mx-auto mb-6 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+            </svg>
+            <h3 class="text-xl font-semibold text-gray-900 mb-2">No Shipments Found</h3>
+            <p class="text-gray-600 mb-6">
+                You don't have any expected shipments yet. Shipments will appear here when someone sends a package to your email address.
+            </p>
+            <p class="text-sm text-gray-500">
+                Your registered email: <strong>{{ user.email }}</strong>
+            </p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

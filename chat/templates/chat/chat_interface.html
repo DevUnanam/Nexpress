@@ -1,0 +1,260 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Support Chat - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <!-- Chat Header -->
+            <div class="bg-gradient-to-r from-green-500 to-emerald-700 px-6 py-4">
+                <h2 class="text-2xl font-bold text-white flex items-center">
+                    <svg class="w-8 h-8 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
+                    </svg>
+                    Customer Support
+                </h2>
+                <p class="text-green-100 text-sm mt-1">How can we help you today?</p>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="h-96 overflow-y-auto p-6 bg-gray-50 space-y-4">
+                <!-- Welcome Message -->
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gradient-to-br from-green-500 to-emerald-700 flex items-center justify-center text-white font-bold">
+                            B
+                        </div>
+                    </div>
+                    <div class="ml-3 bg-white rounded-lg shadow p-3 max-w-md">
+                        <p class="text-sm text-gray-800">
+                            Welcome to Nexpress support! Type "hello" or "hi" to see how I can help you.
+                        </p>
+                        <span class="text-xs text-gray-500 mt-1 block">Just now</span>
+                    </div>
+                </div>
+
+                <!-- Previous messages will be loaded here -->
+                {% for message in messages %}
+                <div class="flex items-start {% if message.sender_type == 'customer' %}justify-end{% endif %}">
+                    {% if message.sender_type != 'customer' %}
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full {% if message.sender_type == 'bot' %}bg-gradient-to-br from-green-500 to-emerald-700{% elif message.sender_type == 'agent' %}bg-green-600{% else %}bg-gray-600{% endif %} flex items-center justify-center text-white font-bold">
+                            {% if message.sender_type == 'bot' %}B{% elif message.sender_type == 'agent' %}A{% else %}S{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="{% if message.sender_type == 'customer' %}mr-3{% else %}ml-3{% endif %} {% if message.sender_type == 'customer' %}bg-gradient-to-br from-green-500 to-emerald-700 text-white{% else %}bg-white text-gray-800{% endif %} rounded-lg shadow p-3 max-w-md">
+                        <p class="text-sm">{{ message.message }}</p>
+                        <span class="text-xs {% if message.sender_type == 'customer' %}text-green-100{% else %}text-gray-500{% endif %} mt-1 block">
+                            {{ message.timestamp|date:"h:i A" }}
+                        </span>
+                    </div>
+
+                    {% if message.sender_type == 'customer' %}
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-gray-600 flex items-center justify-center text-white font-bold">
+                            U
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chat Input -->
+            <div class="border-t border-gray-200 px-6 py-4 bg-white">
+                <form id="chat-form" class="flex space-x-3">
+                    <input
+                        type="text"
+                        id="message-input"
+                        placeholder="Type your message..."
+                        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        autocomplete="off"
+                    >
+                    <button
+                        type="submit"
+                        class="bg-gradient-to-br from-green-500 to-emerald-700 hover:bg-gradient-to-br from-green-600 to-emerald-800 text-white font-semibold px-6 py-2 rounded-lg transition duration-200 flex items-center"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Send
+                    </button>
+                </form>
+
+                <!-- Connect to Agent Button (hidden by default) -->
+                <button
+                    id="connect-agent-btn"
+                    class="hidden mt-3 w-full bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-200"
+                >
+                    Connect to Customer Care Agent
+                </button>
+
+                <!-- Status Indicator -->
+                <div id="status-indicator" class="mt-3 text-sm text-gray-600 hidden">
+                    <span class="inline-block w-2 h-2 bg-green-500 rounded-full animate-pulse mr-2"></span>
+                    <span id="status-text">Bot Active</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Links -->
+        <div class="mt-6 text-center">
+            <a href="{% url 'chat:faq_list' %}" class="text-green-600 hover:text-green-800 font-medium">
+                View All FAQs →
+            </a>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sessionId = '{{ session_id }}';
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const chatSocket = new WebSocket(
+        wsProtocol + '://' + window.location.host + '/ws/chat/' + sessionId + '/'
+    );
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('message-input');
+    const chatForm = document.getElementById('chat-form');
+    const connectAgentBtn = document.getElementById('connect-agent-btn');
+    const statusIndicator = document.getElementById('status-indicator');
+    const statusText = document.getElementById('status-text');
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Format timestamp
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
+    // Add message to chat
+    function addMessage(message, sender, senderName = '', showAgentButton = false) {
+        const messageDiv = document.createElement('div');
+        const isCustomer = sender === 'customer';
+
+        messageDiv.className = `flex items-start ${isCustomer ? 'justify-end' : ''}`;
+
+        let avatarColor = 'bg-gradient-to-br from-green-500 to-emerald-700';
+        let avatarLetter = 'B';
+
+        if (sender === 'agent') {
+            avatarColor = 'bg-green-600';
+            avatarLetter = 'A';
+        } else if (sender === 'system') {
+            avatarColor = 'bg-gray-600';
+            avatarLetter = 'S';
+        } else if (sender === 'customer') {
+            avatarColor = 'bg-gray-600';
+            avatarLetter = 'U';
+        }
+
+        // Escape HTML and preserve line breaks
+        const formattedMessage = message
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;')
+            .replace(/\n/g, '<br>');
+
+        messageDiv.innerHTML = `
+            ${!isCustomer ? `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold">
+                        ${avatarLetter}
+                    </div>
+                </div>
+            ` : ''}
+
+            <div class="${isCustomer ? 'mr-3' : 'ml-3'} ${isCustomer ? 'bg-gradient-to-br from-green-500 to-emerald-700 text-white' : 'bg-white text-gray-800'} rounded-lg shadow p-3 max-w-md">
+                <p class="text-sm whitespace-pre-line">${formattedMessage}</p>
+                <span class="text-xs ${isCustomer ? 'text-green-100' : 'text-gray-500'} mt-1 block">
+                    ${formatTime(new Date())}
+                </span>
+            </div>
+
+            ${isCustomer ? `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold">
+                        ${avatarLetter}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+
+        // Show agent button if bot couldn't answer
+        if (showAgentButton && sender === 'bot') {
+            connectAgentBtn.classList.remove('hidden');
+        }
+    }
+
+    // WebSocket handlers
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        if (data.type === 'message') {
+            addMessage(
+                data.message,
+                data.sender,
+                data.sender_name,
+                data.show_agent_button
+            );
+
+            // Update status
+            if (data.sender === 'agent') {
+                statusIndicator.classList.remove('hidden');
+                statusText.textContent = 'Connected to Agent: ' + data.sender_name;
+                statusText.parentElement.querySelector('.bg-green-500').classList.add('bg-green-500');
+                connectAgentBtn.classList.add('hidden');
+            } else if (data.sender === 'system' && data.message.includes('Connecting')) {
+                statusIndicator.classList.remove('hidden');
+                statusText.textContent = 'Connecting to agent...';
+            }
+        } else if (data.type === 'closed') {
+            statusIndicator.classList.remove('hidden');
+            statusText.textContent = 'Chat closed';
+            messageInput.disabled = true;
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    // Send message
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'type': 'message',
+                'message': message
+            }));
+            messageInput.value = '';
+        }
+    });
+
+    // Connect to agent
+    connectAgentBtn.addEventListener('click', function() {
+        chatSocket.send(JSON.stringify({
+            'type': 'request_agent'
+        }));
+        connectAgentBtn.disabled = true;
+        connectAgentBtn.textContent = 'Connecting...';
+    });
+
+    // Initial scroll
+    scrollToBottom();
+</script>
+{% endblock %}
