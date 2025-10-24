@@ -3,7 +3,8 @@
 *.md
 
 # But keep the repository root README.md (do not ignore it)
-!README.md
+!README.
+!requirements.txt
 
 # Typical additions you might want as well
 # Byte-compiled / cache
