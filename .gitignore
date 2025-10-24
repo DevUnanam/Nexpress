@@ -9,7 +9,7 @@
 # Byte-compiled / cache
 __pycache__/
 .pytest_cache/
-
+.env
 # Django / Python artifacts
 *.py[cod]
 *.sqlite3
