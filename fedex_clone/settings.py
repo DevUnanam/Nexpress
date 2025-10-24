@@ -156,17 +156,14 @@ AUTHENTICATION_BACKENDS = [
 EMAIL_BACKEND = "sendgrid_backend.SendgridBackend"
 SENDGRID_API_KEY = env("SENDGRID_API_KEY")  # Stored in .env
 SENDGRID_SANDBOX_MODE_IN_DEBUG = False
-SENDGRID_ECHO_TO_STDOUT = True  # Shows email output in console during dev
+SENDGRID_ECHO_TO_STDOUT = False  # Disable console output for emails
 DEFAULT_FROM_EMAIL = "riaahh20@gmail.com"
 
 TWILIO_ACCOUNT_SID = env("TWILIO_ACCOUNT_SID")
 TWILIO_AUTH_TOKEN = env("TWILIO_AUTH_TOKEN")
 
-
-SITE_URL = "https://nexpress.onrender.com"
-
-
+# Site URL for email verification links
 if DEBUG:
-    DOMAIN = "http://127.0.0.1:8000"
+    SITE_URL = "http://127.0.0.1:8000"
 else:
-    DOMAIN = "https://nexpress.onrender.com"
+    SITE_URL = "https://nexpress.onrender.com"
