@@ -92,9 +92,7 @@ class RegisterView(CreateView):
         token = user.generate_verification_token()
 
         # Build verification URL
-        verification_url = self.request.build_absolute_uri(
-            reverse_lazy('core:verify_email', kwargs={'token': token})
-        )
+        verification_url = f"{settings.SITE_URL}{reverse_lazy('core:verify_email', kwargs={'token': token})}"
 
         # Send verification email
         subject = 'Verify Your Email - FedEx Clone'
