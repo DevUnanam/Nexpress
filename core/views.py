@@ -44,19 +44,7 @@ class CustomLoginView(DjangoLoginView):
         user = authenticate(self.request, username=username, password=password)
 
         if user is None:
-            # Check if user exists but email not verified
-            try:
-                user_check = UserProfile.objects.get(Q(email__iexact=username) | Q(username__iexact=username))
-                if not user_check.is_email_verified:
-                    messages.error(
-                        self.request,
-                        'Please verify your email address before logging in. Check your inbox for the verification link.'
-                    )
-                else:
-                    messages.error(self.request, 'Invalid email or password.')
-            except UserProfile.DoesNotExist:
-                messages.error(self.request, 'Invalid email or password.')
-
+            messages.error(self.request, 'Invalid email or password.')
             return self.form_invalid(form)
 
         # If authentication successful, proceed with login
@@ -88,59 +76,10 @@ class RegisterView(CreateView):
 
         user.save()
 
-        # Generate verification token
-        token = user.generate_verification_token()
-
-        # Build verification URL
-        verification_url = f"{settings.SITE_URL}{reverse_lazy('core:verify_email', kwargs={'token': token})}"
-
-        # Send verification email
-        subject = 'Verify Your Email - FedEx Clone'
-        message = f'''
-Hello {user.username},
-
-Thank you for registering with FedEx Clone!
-
-Please verify your email address by clicking the link below:
-{verification_url}
-
-This link will expire in 24 hours.
-
-If you did not create this account, please ignore this email.
-
-Best regards,
-FedEx Clone Team
-        '''
-
-        try:
-            from sendgrid import SendGridAPIClient
-            from sendgrid.helpers.mail import Mail, ClickTracking, TrackingSettings
-
-            # Create email message with click tracking disabled
-            sg_mail = Mail(
-                from_email=settings.DEFAULT_FROM_EMAIL if hasattr(settings, 'DEFAULT_FROM_EMAIL') else 'noreply@fedexclone.com',
-                to_emails=user.email,
-                subject=subject,
-                plain_text_content=message
-            )
-
-            # Disable click tracking to prevent URL mangling
-            tracking_settings = TrackingSettings()
-            tracking_settings.click_tracking = ClickTracking(enable=False, enable_text=False)
-            sg_mail.tracking_settings = tracking_settings
-
-            # Send email via SendGrid API
-            sg = SendGridAPIClient(settings.SENDGRID_API_KEY)
-            response = sg.send(sg_mail)
-            messages.success(
-                self.request,
-                f'Account created successfully! Please check your email ({user.email}) to verify your account before logging in.'
-            )
-        except Exception as e:
-            messages.warning(
-                self.request,
-                f'Account created but there was an error sending the verification email. Please contact support.'
-            )
+        messages.success(
+            self.request,
+            f'Account created successfully! You can now log in with your credentials.'
+        )
 
         return redirect(reverse_lazy('login'))
 

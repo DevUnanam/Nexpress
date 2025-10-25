@@ -32,11 +32,6 @@ class EmailBackend(ModelBackend):
 
         # Check password
         if user.check_password(password):
-            # Check if email is verified
-            if not user.is_email_verified:
-                # Return None if email is not verified
-                # The view will handle showing appropriate message
-                return None
             return user
 
         return None

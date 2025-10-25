@@ -11,7 +11,8 @@
       "Bash(python manage.py:*)",
       "Bash(pip install:*)",
       "Bash(source:*)",
-      "Bash(python:*)"
+      "Bash(python:*)",
+      "Bash(echo:*)"
     ],
     "deny": [],
     "ask": []
