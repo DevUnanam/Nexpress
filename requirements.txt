@@ -8,7 +8,12 @@ channels==4.3.1
 channels_redis==4.3.0
 chardet==5.2.0
 charset-normalizer==3.4.2
+<<<<<<< HEAD
 click==8.2.1
+=======
+cleo==2.1.0
+click==8.1.7
+>>>>>>> 0da0fbf315be05c0c60d8d2bfd9872d563eabb30
 colorama==0.4.6
 cookiecutter==2.6.0
 crispy-tailwind==1.0.3
