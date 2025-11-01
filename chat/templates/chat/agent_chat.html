@@ -1,0 +1,217 @@
+{% extends 'base.html' %}
+
+{% block title %}Agent Chat - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-100 py-6 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-6xl mx-auto">
+        <!-- Back button -->
+        <div class="mb-4">
+            <a href="{% url 'chat:agent_dashboard' %}" class="text-green-600 hover:text-green-800 font-medium flex items-center">
+                <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                </svg>
+                Back to Dashboard
+            </a>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+            <!-- Chat Header -->
+            <div class="bg-gradient-to-r from-green-600 to-green-800 px-6 py-4">
+                <h2 class="text-2xl font-bold text-white">
+                    Chat with {% if session.customer %}{{ session.customer.username }}{% else %}{{ session.customer_name|default:"Anonymous" }}{% endif %}
+                </h2>
+                <p class="text-green-100 text-sm mt-1">
+                    Session ID: {{ session.session_id }} | Status: {{ session.get_status_display }}
+                </p>
+            </div>
+
+            <!-- Chat Messages Container -->
+            <div id="chat-messages" class="h-96 overflow-y-auto p-6 bg-gray-50 space-y-4">
+                {% for message in messages %}
+                <div class="flex items-start {% if message.sender_type == 'agent' %}justify-end{% endif %}">
+                    {% if message.sender_type != 'agent' %}
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full {% if message.sender_type == 'bot' %}bg-gradient-to-br from-green-500 to-emerald-700{% elif message.sender_type == 'customer' %}bg-gray-600{% else %}bg-gray-500{% endif %} flex items-center justify-center text-white font-bold">
+                            {% if message.sender_type == 'bot' %}B{% elif message.sender_type == 'customer' %}C{% else %}S{% endif %}
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="{% if message.sender_type == 'agent' %}mr-3{% else %}ml-3{% endif %} {% if message.sender_type == 'agent' %}bg-green-600 text-white{% else %}bg-white text-gray-800{% endif %} rounded-lg shadow p-3 max-w-md">
+                        <p class="text-sm">{{ message.message }}</p>
+                        <span class="text-xs {% if message.sender_type == 'agent' %}text-green-100{% else %}text-gray-500{% endif %} mt-1 block">
+                            {{ message.timestamp|date:"h:i A" }}
+                        </span>
+                    </div>
+
+                    {% if message.sender_type == 'agent' %}
+                    <div class="flex-shrink-0">
+                        <div class="w-10 h-10 rounded-full bg-green-600 flex items-center justify-center text-white font-bold">
+                            A
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+
+            <!-- Chat Input -->
+            <div class="border-t border-gray-200 px-6 py-4 bg-white">
+                <form id="agent-chat-form" class="flex space-x-3">
+                    <input
+                        type="text"
+                        id="agent-message-input"
+                        placeholder="Type your response..."
+                        class="flex-1 border border-gray-300 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                        autocomplete="off"
+                    >
+                    <button
+                        type="submit"
+                        class="bg-green-600 hover:bg-green-700 text-white font-semibold px-6 py-2 rounded-lg transition duration-200 flex items-center"
+                    >
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path>
+                        </svg>
+                        Send
+                    </button>
+                </form>
+
+                <div class="mt-3 flex space-x-3">
+                    <button
+                        id="close-chat-btn"
+                        class="bg-red-600 hover:bg-red-700 text-white font-semibold px-4 py-2 rounded-lg transition duration-200"
+                    >
+                        Close Chat
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const sessionId = '{{ session.session_id }}';
+    const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+    const chatSocket = new WebSocket(
+        wsProtocol + '://' + window.location.host + '/ws/chat/' + sessionId + '/'
+    );
+
+    const chatMessages = document.getElementById('chat-messages');
+    const messageInput = document.getElementById('agent-message-input');
+    const chatForm = document.getElementById('agent-chat-form');
+    const closeChatBtn = document.getElementById('close-chat-btn');
+
+    // Auto-scroll to bottom
+    function scrollToBottom() {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+
+    // Format timestamp
+    function formatTime(timestamp) {
+        const date = new Date(timestamp);
+        return date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    }
+
+    // Add message to chat
+    function addMessage(message, sender, senderName = '') {
+        const messageDiv = document.createElement('div');
+        const isAgent = sender === 'agent';
+
+        messageDiv.className = `flex items-start ${isAgent ? 'justify-end' : ''}`;
+
+        let avatarColor = 'bg-gradient-to-br from-green-500 to-emerald-700';
+        let avatarLetter = 'B';
+
+        if (sender === 'customer') {
+            avatarColor = 'bg-gray-600';
+            avatarLetter = 'C';
+        } else if (sender === 'system') {
+            avatarColor = 'bg-gray-500';
+            avatarLetter = 'S';
+        } else if (sender === 'agent') {
+            avatarColor = 'bg-green-600';
+            avatarLetter = 'A';
+        }
+
+        messageDiv.innerHTML = `
+            ${!isAgent ? `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold">
+                        ${avatarLetter}
+                    </div>
+                </div>
+            ` : ''}
+
+            <div class="${isAgent ? 'mr-3' : 'ml-3'} ${isAgent ? 'bg-green-600 text-white' : 'bg-white text-gray-800'} rounded-lg shadow p-3 max-w-md">
+                <p class="text-sm">${message}</p>
+                <span class="text-xs ${isAgent ? 'text-green-100' : 'text-gray-500'} mt-1 block">
+                    ${formatTime(new Date())}
+                </span>
+            </div>
+
+            ${isAgent ? `
+                <div class="flex-shrink-0">
+                    <div class="w-10 h-10 rounded-full ${avatarColor} flex items-center justify-center text-white font-bold">
+                        ${avatarLetter}
+                    </div>
+                </div>
+            ` : ''}
+        `;
+
+        chatMessages.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    // WebSocket handlers
+    chatSocket.onopen = function(e) {
+        // Join chat as agent
+        chatSocket.send(JSON.stringify({
+            'type': 'agent_join'
+        }));
+    };
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+
+        if (data.type === 'message') {
+            addMessage(data.message, data.sender, data.sender_name);
+        } else if (data.type === 'closed') {
+            messageInput.disabled = true;
+            closeChatBtn.disabled = true;
+            alert('Chat session has been closed');
+            window.location.href = '{% url "chat:agent_dashboard" %}';
+        }
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    // Send message
+    chatForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        const message = messageInput.value.trim();
+
+        if (message) {
+            chatSocket.send(JSON.stringify({
+                'type': 'agent_message',
+                'message': message
+            }));
+            messageInput.value = '';
+        }
+    });
+
+    // Close chat
+    closeChatBtn.addEventListener('click', function() {
+        if (confirm('Are you sure you want to close this chat?')) {
+            chatSocket.send(JSON.stringify({
+                'type': 'close_chat'
+            }));
+        }
+    });
+
+    // Initial scroll
+    scrollToBottom();
+</script>
+{% endblock %}

@@ -1,0 +1,295 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Shipment - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-4xl mx-auto">
+        <!-- Header -->
+        <div class="text-center mb-8">
+            <div class="flex justify-center mb-4">
+                <div class="bg-gradient-to-br from-green-500 to-emerald-700-100 rounded-full p-4">
+                    <svg class="h-12 w-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"></path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-bold text-gray-900">Create New Shipment</h1>
+            <p class="mt-2 text-lg text-gray-600">
+                Fill in the details to ship your package
+            </p>
+        </div>
+
+        <!-- Main Form Card -->
+        <div class="bg-white shadow-xl rounded-2xl overflow-hidden">
+            <form method="post" action="{% url 'core:create_shipment' %}" class="divide-y divide-gray-200">
+                {% csrf_token %}
+
+                {% if form.non_field_errors %}
+                    <div class="bg-red-50 border-l-4 border-red-400 p-4 m-6">
+                        <div class="flex">
+                            <div class="flex-shrink-0">
+                                <svg class="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
+                            <div class="ml-3">
+                                <p class="text-sm text-red-700">{{ form.non_field_errors }}</p>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+
+                <!-- Recipient Information -->
+                <div class="px-6 py-8 sm:px-10">
+                    <div class="flex items-center mb-6">
+                        <div class="flex-shrink-0 bg-gradient-to-br from-green-500 to-emerald-700 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">
+                            1
+                        </div>
+                        <h3 class="ml-4 text-2xl font-semibold text-gray-900">Recipient Information</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <!-- Recipient Name -->
+                        <div class="sm:col-span-2">
+                            <label for="{{ form.recipient_name.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Recipient Name <span class="text-red-500">*</span>
+                            </label>
+                            {{ form.recipient_name }}
+                            {% if form.recipient_name.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.recipient_name.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Recipient Phone -->
+                        <div>
+                            <label for="{{ form.recipient_phone.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Phone Number
+                            </label>
+                            {{ form.recipient_phone }}
+                            {% if form.recipient_phone.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.recipient_phone.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Recipient Email -->
+                        <div>
+                            <label for="{{ form.recipient_email.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Email Address
+                            </label>
+                            {{ form.recipient_email }}
+                            {% if form.recipient_email.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.recipient_email.errors.0 }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Address Information -->
+                <div class="px-6 py-8 sm:px-10 bg-gray-50">
+                    <div class="flex items-center mb-6">
+                        <div class="flex-shrink-0 bg-gradient-to-br from-green-500 to-emerald-700 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">
+                            2
+                        </div>
+                        <h3 class="ml-4 text-2xl font-semibold text-gray-900">Shipping Addresses</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+                        <!-- Pickup Address -->
+                        <div class="bg-white p-6 rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
+                            <div class="flex items-center mb-4">
+                                <svg class="h-6 w-6 text-emerald-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                </svg>
+                                <label for="{{ form.pickup_address.id_for_label }}" class="text-sm font-semibold text-gray-700">
+                                    Pickup Address <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+                            {{ form.pickup_address }}
+                            {% if form.pickup_address.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.pickup_address.errors.0 }}
+                                </p>
+                            {% else %}
+                                <p class="mt-2 text-xs text-gray-500">Where we'll collect the package</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Delivery Address -->
+                        <div class="bg-white p-6 rounded-lg border-2 border-gray-200 hover:border-primary transition-colors">
+                            <div class="flex items-center mb-4">
+                                <svg class="h-6 w-6 text-green-600 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                <label for="{{ form.delivery_address.id_for_label }}" class="text-sm font-semibold text-gray-700">
+                                    Delivery Address <span class="text-red-500">*</span>
+                                </label>
+                            </div>
+                            {{ form.delivery_address }}
+                            {% if form.delivery_address.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.delivery_address.errors.0 }}
+                                </p>
+                            {% else %}
+                                <p class="mt-2 text-xs text-gray-500">Final destination of the package</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Package Details -->
+                <div class="px-6 py-8 sm:px-10">
+                    <div class="flex items-center mb-6">
+                        <div class="flex-shrink-0 bg-gradient-to-br from-green-500 to-emerald-700 text-white rounded-full h-10 w-10 flex items-center justify-center font-bold text-lg">
+                            3
+                        </div>
+                        <h3 class="ml-4 text-2xl font-semibold text-gray-900">Package Details</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 gap-6">
+                        <!-- Weight -->
+                        <div>
+                            <label for="{{ form.weight.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Weight (kg) <span class="text-red-500">*</span>
+                            </label>
+                            <div class="relative rounded-md shadow-sm">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                                    </svg>
+                                </div>
+                                {{ form.weight }}
+                            </div>
+                            {% if form.weight.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.weight.errors.0 }}
+                                </p>
+                            {% else %}
+                                <p class="mt-2 text-xs text-gray-500">Maximum weight: 1000 kg</p>
+                            {% endif %}
+                        </div>
+
+                        <!-- Notes -->
+                        <div>
+                            <label for="{{ form.notes.id_for_label }}" class="block text-sm font-semibold text-gray-700 mb-2">
+                                Additional Notes
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <p class="mt-2 text-sm text-red-600 flex items-center">
+                                    <svg class="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    {{ form.notes.errors.0 }}
+                                </p>
+                            {% else %}
+                                <p class="mt-2 text-xs text-gray-500">Special instructions, handling requirements, etc.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="px-6 py-6 sm:px-10 bg-gray-50 flex flex-col-reverse sm:flex-row sm:justify-between gap-3">
+                    <a href="{% url 'core:home' %}" class="inline-flex justify-center items-center px-6 py-3 border-2 border-gray-300 shadow-sm text-base font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                        </svg>
+                        Cancel
+                    </a>
+                    <button type="submit" class="inline-flex justify-center items-center px-8 py-3 border border-transparent shadow-lg text-base font-bold rounded-lg text-white bg-gradient-to-br from-green-500 to-emerald-700 hover:from-emerald-600 hover:to-emerald-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary transform hover:scale-105 transition-all duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                        Create Shipment
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Info Card -->
+        <div class="mt-8 bg-gradient-to-r from-blue-50 to-indigo-50 border-l-4 border-blue-500 rounded-r-lg shadow-md p-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-6 w-6 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h4 class="text-base font-semibold text-blue-900 mb-2">Important Information</h4>
+                    <ul class="space-y-2 text-sm text-blue-800">
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 mr-2 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>A unique tracking number will be generated automatically</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 mr-2 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>You can track your shipment status in real-time using the tracking number</span>
+                        </li>
+                        <li class="flex items-start">
+                            <svg class="h-5 w-5 mr-2 text-blue-500 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span>Ensure all addresses are complete and accurate for timely delivery</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Enhanced form input styling */
+    input[type="text"],
+    input[type="email"],
+    input[type="number"],
+    textarea,
+    select {
+        transition: all 0.2s ease-in-out;
+    }
+
+    input[type="text"]:focus,
+    input[type="email"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 6px -1px rgba(11, 95, 255, 0.1), 0 2px 4px -1px rgba(11, 95, 255, 0.06);
+    }
+
+    /* Custom weight input with icon padding */
+    input[type="number"] {
+        padding-left: 2.5rem !important;
+    }
+</style>
+{% endblock %}

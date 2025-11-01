@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Shipment - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 via-blue-50 to-gray-50 py-12 px-4 sm:px-6 lg:px-8" {% if found %}data-tracking-number="{{ shipment.tracking_number }}"{% endif %}>
+    <div class="max-w-5xl mx-auto">
+
+        {% if found %}
+        <!-- Shipment Found - Tracking Display -->
+        <div class="mb-8 text-center">
+            <div class="inline-flex items-center justify-center mb-4">
+                <div class="bg-gradient-to-br from-green-500 to-emerald-700-100 rounded-full p-4">
+                    <svg class="h-12 w-12 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path>
+                    </svg>
+                </div>
+            </div>
+            <h1 class="text-4xl font-extrabold text-gray-900">Track Your Shipment</h1>
+            <p class="mt-2 text-lg text-gray-600">Real-time tracking information</p>
+        </div>
+
+        <!-- Tracking Number Display Card -->
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100 mb-8">
+            <div class="bg-gradient-to-r from-primary to-primary-600 px-8 py-6">
+                <div class="flex flex-col sm:flex-row items-center justify-between">
+                    <div>
+                        <p class="text-xs font-semibold text-primary-100 uppercase tracking-wide mb-1">Tracking Number</p>
+                        <p class="text-2xl md:text-3xl font-black text-white tracking-wider font-mono">
+                            {{ shipment.tracking_number }}
+                        </p>
+                    </div>
+                    <div class="mt-4 sm:mt-0">
+                        <span class="inline-flex items-center px-6 py-3 rounded-full text-base font-bold shadow-lg {{ shipment.get_status_badge_class }}">
+                            <span class="h-3 w-3 rounded-full bg-current mr-2 animate-pulse"></span>
+                            {{ shipment.get_status_display }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Hold Alert (if status is hold) -->
+            {% if shipment.status == 'hold' %}
+            <div class="px-8 py-6 bg-yellow-50 border-t border-yellow-100">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0">
+                        <svg class="h-6 w-6 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                        </svg>
+                    </div>
+                    <div class="ml-4">
+                        <h3 class="text-lg font-semibold text-yellow-900">Shipment On Hold</h3>
+                        <p class="mt-1 text-sm text-yellow-700">
+                            Your shipment is temporarily on hold. Please see the reason below:
+                        </p>
+                        {% if shipment.hold_reason %}
+                        <div class="mt-3 bg-white border border-yellow-200 rounded-lg p-4">
+                            <p class="text-sm font-medium text-yellow-900 mb-1">Hold Reason:</p>
+                            <p class="text-sm text-gray-700">{{ shipment.hold_reason }}</p>
+                        </div>
+                        {% endif %}
+                        <p class="mt-3 text-xs text-yellow-600">
+                            We're working to resolve this issue as quickly as possible. You'll be notified once your shipment resumes.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Timeline/Progress Section -->
+            <div class="px-8 py-10 bg-gray-50">
+                <h3 class="text-xl font-bold text-gray-900 mb-6">Shipment Progress</h3>
+                <div class="relative">
+                    <!-- Progress Line -->
+                    <div class="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-300"></div>
+                    <div class="absolute left-5 top-0 w-0.5 {% if shipment.status == 'pending' %}bg-gray-400{% elif shipment.status == 'accepted' %}bg-blue-400{% elif shipment.status == 'picked_up' %}bg-blue-500{% elif shipment.status == 'in_transit' %}bg-gradient-to-br from-green-500 to-emerald-700{% else %}bg-green-500{% endif %} transition-all duration-500"
+                         style="height: {% if shipment.status == 'pending' %}20%{% elif shipment.status == 'accepted' %}40%{% elif shipment.status == 'picked_up' %}60%{% elif shipment.status == 'in_transit' %}80%{% else %}100%{% endif %}"></div>
+
+                    <!-- Timeline Steps -->
+                    <div class="space-y-8">
+                        <!-- Pending -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 {% if shipment.status == 'pending' %}border-gray-400 bg-gray-400{% else %}border-gray-300 bg-white{% endif %} flex items-center justify-center shadow-lg z-10 relative">
+                                    {% if shipment.status != 'pending' %}
+                                    <svg class="h-5 w-5 text-gray-600" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% else %}
+                                    <div class="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">Pending</h4>
+                                <p class="text-sm text-gray-600">Shipment created and awaiting acceptance</p>
+                                <p class="text-xs text-gray-500 mt-1">{{ shipment.created_at|date:"M d, Y - g:i A" }}</p>
+                            </div>
+                        </div>
+
+                        <!-- Accepted (Light Blue) -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 {% if shipment.status == 'accepted' or shipment.status == 'picked_up' or shipment.status == 'in_transit' or shipment.status == 'delivered' %}border-blue-400 bg-blue-400{% else %}border-gray-300 bg-white{% endif %} flex items-center justify-center shadow-lg z-10 relative">
+                                    {% if shipment.status != 'pending' and shipment.status != 'accepted' %}
+                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% elif shipment.status == 'accepted' %}
+                                    <div class="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">Accepted</h4>
+                                <p class="text-sm text-gray-600">Shipment confirmed and scheduled for pickup</p>
+                            </div>
+                        </div>
+
+                        <!-- Picked Up (Medium Blue) -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 {% if shipment.status == 'picked_up' or shipment.status == 'in_transit' or shipment.status == 'delivered' %}border-blue-500 bg-blue-500{% else %}border-gray-300 bg-white{% endif %} flex items-center justify-center shadow-lg z-10 relative">
+                                    {% if shipment.status == 'in_transit' or shipment.status == 'delivered' %}
+                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% elif shipment.status == 'picked_up' %}
+                                    <div class="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">Picked Up</h4>
+                                <p class="text-sm text-gray-600">Package collected from pickup location</p>
+                                {% if shipment.courier %}
+                                <p class="text-xs text-gray-500 mt-1">Courier: {{ shipment.courier.username }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- In Transit -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 {% if shipment.status == 'in_transit' or shipment.status == 'delivered' %}border-primary bg-gradient-to-br from-green-500 to-emerald-700{% else %}border-gray-300 bg-white{% endif %} flex items-center justify-center shadow-lg z-10 relative">
+                                    {% if shipment.status == 'delivered' %}
+                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% elif shipment.status == 'in_transit' %}
+                                    <div class="h-3 w-3 bg-white rounded-full animate-pulse"></div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">In Transit</h4>
+                                <p class="text-sm text-gray-600">Package is on its way to destination</p>
+                            </div>
+                        </div>
+
+                        <!-- Hold (Only shown if status is hold) -->
+                        {% if shipment.status == 'hold' %}
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 border-yellow-500 bg-yellow-500 flex items-center justify-center shadow-lg z-10 relative">
+                                    <svg class="h-5 w-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clip-rule="evenodd"></path>
+                                    </svg>
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-yellow-900">On Hold</h4>
+                                <p class="text-sm text-yellow-700">Shipment temporarily delayed</p>
+                                {% if shipment.hold_reason %}
+                                <p class="text-xs text-yellow-600 mt-1">{{ shipment.hold_reason|truncatewords:15 }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <!-- Delivered -->
+                        <div class="relative flex items-start">
+                            <div class="flex-shrink-0">
+                                <div class="h-10 w-10 rounded-full border-4 {% if shipment.status == 'delivered' %}border-green-500 bg-green-500{% else %}border-gray-300 bg-white{% endif %} flex items-center justify-center shadow-lg z-10 relative">
+                                    {% if shipment.status == 'delivered' %}
+                                    <svg class="h-6 w-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                                        <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
+                                    </svg>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="ml-6 flex-1">
+                                <h4 class="text-lg font-semibold text-gray-900">Delivered</h4>
+                                <p class="text-sm text-gray-600">Package successfully delivered to recipient</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Notes History -->
+            {% if shipment.status_notes.all %}
+            <div class="px-8 py-8 border-t border-gray-200 bg-white">
+                <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center">
+                    <svg class="h-6 w-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Status Updates & Notes
+                </h3>
+                <div class="space-y-4">
+                    {% for note in shipment.status_notes.all %}
+                    <div class="bg-gray-50 border border-gray-200 rounded-lg p-5 hover:shadow-md transition-shadow duration-200">
+                        <div class="flex items-start justify-between mb-3">
+                            <div class="flex items-center">
+                                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold {% if note.status == 'pending' %}bg-gray-100 text-gray-800{% elif note.status == 'accepted' %}bg-blue-100 text-blue-800{% elif note.status == 'picked_up' %}bg-blue-200 text-blue-900{% elif note.status == 'in_transit' %}bg-gradient-to-br from-green-500 to-emerald-700 text-white{% elif note.status == 'hold' %}bg-yellow-100 text-yellow-800{% elif note.status == 'delivered' %}bg-green-100 text-green-800{% endif %}">
+                                    {{ note.get_status_display }}
+                                </span>
+                            </div>
+                            <span class="text-xs text-gray-500 flex items-center">
+                                <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                                </svg>
+                                {{ note.created_at|date:"M d, Y - g:i A" }}
+                            </span>
+                        </div>
+                        <p class="text-sm text-gray-700 leading-relaxed whitespace-pre-line">{{ note.note }}</p>
+                        {% if note.created_by %}
+                        <p class="text-xs text-gray-500 mt-3 italic">
+                            — Updated by {{ note.created_by.get_full_name|default:note.created_by.username }}
+                        </p>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Shipment Details Grid -->
+            <div class="px-8 py-8 border-t border-gray-200">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6">Shipment Details</h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Weight -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                            </svg>
+                            Weight
+                        </dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ shipment.weight }} kg</dd>
+                    </div>
+
+                    <!-- Recipient -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Recipient
+                        </dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ shipment.recipient_name }}</dd>
+                    </div>
+                </div>
+
+                <!-- Addresses -->
+                <div class="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Pickup -->
+                    <div class="border-2 border-primary border-opacity-20 rounded-xl p-6 bg-gradient-to-br from-green-500 to-emerald-700 bg-opacity-5">
+                        <dt class="text-sm font-semibold text-primary mb-3 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            </svg>
+                            Pickup Address
+                        </dt>
+                        <dd class="text-sm text-gray-700">{{ shipment.pickup_address }}</dd>
+                    </div>
+
+                    <!-- Delivery -->
+                    <div class="border-2 border-green-500 border-opacity-20 rounded-xl p-6 bg-green-50">
+                        <dt class="text-sm font-semibold text-green-700 mb-3 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Delivery Address
+                        </dt>
+                        <dd class="text-sm text-gray-700">{{ shipment.delivery_address }}</dd>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons -->
+            <div class="px-8 py-6 bg-gray-50 border-t border-gray-200 flex flex-col sm:flex-row gap-3 justify-center">
+                <a href="{% url 'core:home' %}" class="inline-flex justify-center items-center px-6 py-3 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                    </svg>
+                    Back to Home
+                </a>
+                <a href="{% url 'core:create_shipment' %}" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 shadow-lg transition-all duration-200 transform hover:scale-105">
+                    <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                    </svg>
+                    Create New Shipment
+                </a>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- Shipment Not Found -->
+        <div class="max-w-2xl mx-auto">
+            <div class="bg-white shadow-2xl rounded-3xl p-12 text-center border border-red-100">
+                <div class="mx-auto flex items-center justify-center h-20 w-20 rounded-full bg-red-100 mb-6">
+                    <svg class="h-10 w-10 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                </div>
+                <h3 class="text-3xl font-extrabold text-gray-900 mb-3">Shipment Not Found</h3>
+                <p class="text-lg text-gray-600 mb-2">
+                    We couldn't find a shipment with tracking number:
+                </p>
+                <p class="text-2xl font-mono font-bold text-red-600 mb-6">
+                    {{ tracking_number }}
+                </p>
+                <p class="text-sm text-gray-500 mb-8">
+                    Please double-check the tracking number and try again. Tracking numbers are case-sensitive and must be entered exactly as provided.
+                </p>
+                <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                    <a href="{% url 'core:home' %}" class="inline-flex items-center justify-center px-6 py-3 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 transition-all duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Go to Home
+                    </a>
+                    <a href="{% url 'core:create_shipment' %}" class="inline-flex items-center justify-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-br from-green-500 to-emerald-700 hover:bg-gradient-to-br from-green-500 to-emerald-700-600 shadow-lg transition-all duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create New Shipment
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if found %}
+<script>
+    // Set tracking number for WhatsApp widget
+    window.trackingNumber = "{{ shipment.tracking_number }}";
+    // Update WhatsApp widget URL if function exists
+    if (typeof window.updateWhatsAppWidget === 'function') {
+        window.updateWhatsAppWidget();
+    }
+
+    // Auto-refresh tracking status every 10 seconds
+    let autoRefreshEnabled = true;
+    let refreshInterval;
+
+    function refreshTrackingStatus() {
+        const trackingNumber = "{{ shipment.tracking_number }}";
+
+        fetch(`/api/track/${trackingNumber}/`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Check if status has changed
+                    const currentStatus = "{{ shipment.status }}";
+                    if (data.status !== currentStatus) {
+                        // Status changed - reload page to show updated UI
+                        window.location.reload();
+                    }
+
+                    // Update last updated time
+                    console.log('Status check:', data.status, 'Last updated:', data.last_updated);
+                }
+            })
+            .catch(error => {
+                console.error('Error refreshing status:', error);
+            });
+    }
+
+    // Start auto-refresh
+    function startAutoRefresh() {
+        if (autoRefreshEnabled && "{{ shipment.status }}" !== "delivered") {
+            refreshInterval = setInterval(refreshTrackingStatus, 10000); // 10 seconds
+            console.log('Auto-refresh enabled - checking every 10 seconds');
+        }
+    }
+
+    // Stop auto-refresh
+    function stopAutoRefresh() {
+        if (refreshInterval) {
+            clearInterval(refreshInterval);
+            console.log('Auto-refresh disabled');
+        }
+    }
+
+    // Initialize auto-refresh when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        startAutoRefresh();
+    });
+
+    // Stop refresh when user leaves the page
+    window.addEventListener('beforeunload', function() {
+        stopAutoRefresh();
+    });
+
+    // Stop refresh when page is hidden (tab switched)
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            stopAutoRefresh();
+        } else {
+            startAutoRefresh();
+        }
+    });
+</script>
+{% endif %}
+{% endblock %}
+

@@ -1,0 +1,296 @@
+{% extends 'base.html' %}
+
+{% block title %}Shipment Created Successfully - Nexpress{% endblock %}
+
+{% block content %}
+<div class="min-h-screen bg-gradient-to-br from-gray-50 to-green-50 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8" {% if shipment %}data-tracking-number="{{ shipment.tracking_number }}"{% endif %}>
+    <div class="max-w-3xl w-full">
+        {% if shipment %}
+        <!-- Success Animation Container -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center justify-center">
+                <div class="relative">
+                    <div class="absolute inset-0 bg-green-400 rounded-full animate-ping opacity-75"></div>
+                    <div class="relative bg-gradient-to-br from-green-400 to-green-600 rounded-full p-6 shadow-2xl">
+                        <svg class="h-16 w-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+            <h1 class="mt-6 text-4xl font-extrabold text-gray-900">
+                Shipment Created Successfully!
+            </h1>
+            <p class="mt-2 text-lg text-gray-600">
+                Your package is ready for pickup
+            </p>
+        </div>
+
+        <!-- Main Success Card -->
+        <div class="bg-white shadow-2xl rounded-3xl overflow-hidden border border-gray-100">
+            <!-- Prominent Tracking Number Card -->
+            <div class="bg-gradient-to-r from-primary to-primary-600 px-8 py-10">
+                <div class="text-center">
+                    <p class="text-sm font-semibold text-primary-100 uppercase tracking-widest mb-3">
+                        Your Tracking Number
+                    </p>
+                    <div class="bg-white bg-opacity-20 backdrop-blur-lg rounded-2xl px-8 py-6 mb-6 border-2 border-white border-opacity-30">
+                        <p class="text-4xl md:text-5xl font-black text-white tracking-wider font-mono" id="tracking-number">
+                            {{ shipment.tracking_number }}
+                        </p>
+                    </div>
+
+                    <!-- Action Buttons Row -->
+                    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+                        <button onclick="copyTrackingNumber()" class="inline-flex items-center justify-center px-6 py-3 border-2 border-white text-base font-semibold rounded-xl text-white hover:bg-white hover:text-primary focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-all duration-300 transform hover:scale-105">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path>
+                            </svg>
+                            Copy Number
+                        </button>
+                        <a href="{% url 'core:track_shipment' shipment.tracking_number %}" class="inline-flex items-center justify-center px-8 py-3 border-2 border-white text-base font-bold rounded-xl text-primary bg-white hover:bg-opacity-90 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white shadow-xl transition-all duration-300 transform hover:scale-105">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                            </svg>
+                            Track Shipment
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipment Details Section -->
+            <div class="px-8 py-8">
+                <h3 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                    <svg class="h-6 w-6 mr-2 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                    </svg>
+                    Shipment Details
+                </h3>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Status Card -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
+                            </svg>
+                            Status
+                        </dt>
+                        <dd>
+                            <span class="inline-flex items-center px-4 py-2 rounded-full text-sm font-bold {{ shipment.get_status_badge_class }}">
+                                <span class="h-2 w-2 rounded-full bg-current mr-2 animate-pulse"></span>
+                                {{ shipment.get_status_display }}
+                            </span>
+                        </dd>
+                    </div>
+
+                    <!-- Weight Card -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3"></path>
+                            </svg>
+                            Package Weight
+                        </dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ shipment.weight }} kg</dd>
+                    </div>
+
+                    <!-- Recipient Card -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Recipient
+                        </dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ shipment.recipient_name }}</dd>
+                        {% if shipment.recipient_phone %}
+                        <dd class="text-sm text-gray-600 mt-1">{{ shipment.recipient_phone }}</dd>
+                        {% endif %}
+                    </div>
+
+                    <!-- Created Date Card -->
+                    <div class="bg-gray-50 rounded-xl p-5 border border-gray-200">
+                        <dt class="text-sm font-medium text-gray-500 mb-2 flex items-center">
+                            <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                            Created
+                        </dt>
+                        <dd class="text-lg font-semibold text-gray-900">{{ shipment.created_at|date:"M d, Y" }}</dd>
+                        <dd class="text-sm text-gray-600 mt-1">{{ shipment.created_at|time:"g:i A" }}</dd>
+                    </div>
+                </div>
+
+                <!-- Addresses Section -->
+                <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <!-- Pickup Address -->
+                    <div class="border-2 border-primary border-opacity-20 rounded-xl p-6 bg-gradient-to-br from-green-500 to-emerald-700 bg-opacity-5">
+                        <dt class="text-sm font-semibold text-primary mb-3 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"></path>
+                            </svg>
+                            Pickup Address
+                        </dt>
+                        <dd class="text-base text-gray-700 leading-relaxed">{{ shipment.pickup_address }}</dd>
+                    </div>
+
+                    <!-- Delivery Address -->
+                    <div class="border-2 border-green-500 border-opacity-20 rounded-xl p-6 bg-green-50">
+                        <dt class="text-sm font-semibold text-green-700 mb-3 flex items-center">
+                            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                            </svg>
+                            Delivery Address
+                        </dt>
+                        <dd class="text-base text-gray-700 leading-relaxed">{{ shipment.delivery_address }}</dd>
+                    </div>
+                </div>
+
+                {% if shipment.notes %}
+                <!-- Notes Section -->
+                <div class="mt-6 bg-yellow-50 border-l-4 border-yellow-400 rounded-r-lg p-5">
+                    <dt class="text-sm font-semibold text-yellow-800 mb-2 flex items-center">
+                        <svg class="h-4 w-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 8h10M7 12h4m1 8l-4-4H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-3l-4 4z"></path>
+                        </svg>
+                        Additional Notes
+                    </dt>
+                    <dd class="text-base text-yellow-900">{{ shipment.notes }}</dd>
+                </div>
+                {% endif %}
+            </div>
+
+            <!-- Action Footer -->
+            <div class="px-8 py-6 bg-gray-50 border-t border-gray-200">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <a href="{% url 'core:home' %}" class="inline-flex justify-center items-center px-6 py-3 border-2 border-gray-300 text-base font-semibold rounded-xl text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 transition-all duration-200">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
+                        </svg>
+                        Go to Home
+                    </a>
+                    <a href="{% url 'core:create_shipment' %}" class="inline-flex justify-center items-center px-6 py-3 border border-transparent text-base font-semibold rounded-xl text-white bg-gradient-to-r from-primary to-primary-600 hover:from-primary-600 hover:to-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary shadow-lg transition-all duration-200 transform hover:scale-105">
+                        <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                        </svg>
+                        Create Another Shipment
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Next Steps Info Box -->
+        <div class="mt-8 bg-white border-l-4 border-green-500 rounded-r-2xl shadow-lg p-6">
+            <div class="flex items-start">
+                <div class="flex-shrink-0">
+                    <svg class="h-7 w-7 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-bold text-green-900 mb-3">What Happens Next?</h3>
+                    <div class="space-y-3 text-sm text-green-800">
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 rounded-full bg-green-100 text-green-600 font-bold flex items-center justify-center mr-3 text-xs">1</span>
+                            <span><strong>Save your tracking number</strong> - Keep it safe for future reference</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center mr-3 text-xs">2</span>
+                            <span><strong>Courier assignment</strong> - A courier will be assigned to pick up your package</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center mr-3 text-xs">3</span>
+                            <span><strong>Real-time tracking</strong> - Click "Track Shipment" to monitor your package's journey</span>
+                        </div>
+                        <div class="flex items-start">
+                            <span class="flex-shrink-0 h-6 w-6 rounded-full bg-blue-100 text-blue-600 font-bold flex items-center justify-center mr-3 text-xs">4</span>
+                            <span><strong>Stay updated</strong> - You'll receive notifications as your shipment progresses</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {% else %}
+        <!-- No Shipment Found State -->
+        <div class="bg-white shadow-2xl rounded-2xl p-12 text-center">
+            <div class="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
+                <svg class="h-8 w-8 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Shipment Not Found</h3>
+            <p class="text-gray-600 mb-6">
+                The shipment details are no longer available or the session has expired.
+            </p>
+            <a href="{% url 'core:create_shipment' %}" class="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-xl text-white bg-gradient-to-br from-green-500 to-emerald-700 hover:bg-gradient-to-br from-green-500 to-emerald-700-600 shadow-lg transition-all duration-200">
+                <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                </svg>
+                Create New Shipment
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function copyTrackingNumber() {
+    const trackingNumber = document.getElementById('tracking-number').innerText.trim();
+
+    navigator.clipboard.writeText(trackingNumber).then(function() {
+        const button = event.target.closest('button');
+        const originalHTML = button.innerHTML;
+
+        // Success feedback
+        button.innerHTML = `
+            <svg class="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+            </svg>
+            Copied!
+        `;
+        button.classList.add('bg-white', 'text-primary');
+        button.classList.remove('border-white', 'text-white', 'hover:bg-white', 'hover:text-primary');
+
+        // Reset after 2 seconds
+        setTimeout(function() {
+            button.innerHTML = originalHTML;
+            button.classList.remove('bg-white', 'text-primary');
+            button.classList.add('border-white', 'text-white', 'hover:bg-white', 'hover:text-primary');
+        }, 2000);
+    }, function(err) {
+        console.error('Could not copy tracking number:', err);
+        alert('Failed to copy tracking number. Please copy it manually.');
+    });
+}
+</script>
+
+<style>
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.animate-fadeInUp {
+    animation: fadeInUp 0.6s ease-out;
+}
+</style>
+
+{% if shipment %}
+<script>
+    // Set tracking number for WhatsApp widget
+    window.trackingNumber = "{{ shipment.tracking_number }}";
+    // Update WhatsApp widget URL if function exists
+    if (typeof window.updateWhatsAppWidget === 'function') {
+        window.updateWhatsAppWidget();
+    }
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,24 @@
+# Ignore all .txt and .md files across the repo
+*.txt
+*.md
+
+# But keep important text files
+!README.md
+!requirements.txt
+!runtime.txt
+
+# Typical additions you might want as well
+# Byte-compiled / cache
+__pycache__/
+.pytest_cache/
+.env
+
+# Django / Python artifacts
+*.py[cod]
+*.sqlite3
+env/
+venv/
+.venv/
+
+# Node modules
+node_modules/
