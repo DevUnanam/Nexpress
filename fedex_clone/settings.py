@@ -161,14 +161,14 @@ AUTHENTICATION_BACKENDS = [
 # Email Configuration
 # Using custom backend with extended timeout for WSL compatibility
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
-EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_HOST = 'smtp.sendgrid.net'
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 EMAIL_USE_SSL = False
 EMAIL_TIMEOUT = 600  # Extended timeout for WSL
-EMAIL_HOST_USER = env("EMAIL_HOST_USER")
-EMAIL_HOST_PASSWORD = env("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = env("EMAIL_HOST_USER")
+EMAIL_HOST_USER = env("apikey")
+EMAIL_HOST_PASSWORD = env("SENDGRID_API_KEY")
+DEFAULT_FROM_EMAIL = env("riaahh20@gmail.com")
 
 # Alternative backends for development/testing (if needed):
 #
