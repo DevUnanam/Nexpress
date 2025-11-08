@@ -168,7 +168,7 @@ EMAIL_USE_SSL = False
 EMAIL_TIMEOUT = 600  # Extended timeout for WSL
 EMAIL_HOST_USER = "apikey"
 EMAIL_HOST_PASSWORD = env("SENDGRID_API_KEY")
-DEFAULT_FROM_EMAIL = env("riaahh20@gmail.com")
+DEFAULT_FROM_EMAIL = "riaahh20@gmail.com"
 
 # Alternative backends for development/testing (if needed):
 #
